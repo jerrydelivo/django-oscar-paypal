@@ -325,6 +325,8 @@ class SuccessResponseView(PaymentDetailsView):
         Return a created shipping address instance, created using
         the data returned by PayPal.
         """
+        shipping_address = super(SuccessResponseView, self) \
+            .get_shipping_address(basket)
         # Determine names - PayPal uses a single field
         ship_to_name = self.txn.value('PAYMENTREQUEST_0_SHIPTONAME')
         if ship_to_name is None:
@@ -344,7 +346,9 @@ class SuccessResponseView(PaymentDetailsView):
             line4=self.txn.value('PAYMENTREQUEST_0_SHIPTOCITY', default=""),
             state=self.txn.value('PAYMENTREQUEST_0_SHIPTOSTATE', default=""),
             postcode=self.txn.value('PAYMENTREQUEST_0_SHIPTOZIP', default=""),
-            country=Country.objects.get(iso_3166_1_a2=self.txn.value('PAYMENTREQUEST_0_SHIPTOCOUNTRYCODE'))
+            country=Country.objects.get(iso_3166_1_a2=self.txn.value('PAYMENTREQUEST_0_SHIPTOCOUNTRYCODE')),
+            phone_number=self.txn.value('PAYMENTREQUEST_0_SHIPTOPHONENUM', default=""),
+            notes=shipping_address and shipping_address.notes or ""
         )
 
     def _get_shipping_method_by_name(self, name, basket, shipping_address=None):
